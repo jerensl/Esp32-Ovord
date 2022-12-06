@@ -54,18 +54,18 @@ void setup() {
 
 void sendData(WiFiClientSecure *client, float value1, float value2, float value3, float value4) {
     HTTPClient https;
-        
+    StaticJsonDocument<1024> doc;
+    doc["deviceToken"] = String(token);
+    doc["value1"] = value1;
+    doc["value2"] = value2;
+    doc["value3"] = value3;
+    doc["value4"] = value4;
+    String data;
+    serializeJson(doc, data);
+    
     Serial.print("[HTTPS] begin...\n");
     if (https.begin(*client, "https://cec.azurewebsites.net/api/telemetry/add?deviceShortName="+String(deviceShortName))) {
         Serial.print("[HTTPS] POST...\n");
-        StaticJsonDocument<200> doc;
-        doc["deviceToken"] = String(token);
-        doc["value1"] = value1;
-        doc["value2"] = value2;
-        doc["value3"] = value3;
-        doc["value4"] = value4;
-        String data;
-        serializeJson(doc, data);
 
         https.addHeader("Host", "cec.azurewebsites.net");
         https.addHeader("Content-Type", "application/json");
@@ -95,10 +95,10 @@ void sendData(WiFiClientSecure *client, float value1, float value2, float value3
 }
 
 void loop() {
-    float value1 = random(0, 20)/10;
-    float value2 = random(0, 20)/10;
-    float value3 = random(0, 20)/10;
-    float value4 = random(0, 20)/10;
+    float value1 = random(10, 20)/10;
+    float value2 = random(10, 20)/10;
+    float value3 = random(10, 20)/10;
+    float value4 = random(10, 20)/10;
 
     unsigned long currentTime = millis();
 
