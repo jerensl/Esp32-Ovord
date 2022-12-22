@@ -52,17 +52,19 @@ void setup() {
     }   
 }
 
-void sendData(WiFiClientSecure *client, float value1, float value2, float value3, float value4) {
+void sendData(WiFiClientSecure *client, float values[], String sensors[], int size) {
     HTTPClient https;
     StaticJsonDocument<1024> doc;
+
     doc["deviceToken"] = String(token);
-    doc["value1"] = value1;
-    doc["value2"] = value2;
-    doc["value3"] = value3;
-    doc["value4"] = value4;
+    JsonArray sensor = doc.createNestedArray("sensors");
+    for (int i=0; i< size; i++) sensor.add(sensors[i]);
+    JsonArray value = doc.createNestedArray("data");
+    for (int i=0; i< size; i++) value.add(values[i]);
+
     String data;
     serializeJson(doc, data);
-    
+
     Serial.print("[HTTPS] begin...\n");
     if (https.begin(*client, "https://cec.azurewebsites.net/api/telemetry/add?deviceShortName="+String(deviceShortName))) {
         Serial.print("[HTTPS] POST...\n");
@@ -95,10 +97,9 @@ void sendData(WiFiClientSecure *client, float value1, float value2, float value3
 }
 
 void loop() {
-    float value1 = random(10, 20)/10;
-    float value2 = random(10, 20)/10;
-    float value3 = random(10, 20)/10;
-    float value4 = random(10, 20)/10;
+    int arraySize = 2;
+    float values[arraySize] = { 0.4, 0.1 };
+    String sensors[arraySize] = { "temp-01", "temp-02"};
 
     unsigned long currentTime = millis();
 
@@ -107,7 +108,7 @@ void loop() {
         if(client) {
             client -> setCACert(rootCACertificate);
 
-            sendData(client, value1, value2, value3, value4);
+            sendData(client, values, sensors, arraySize);
         
             delete client;
         } else {
